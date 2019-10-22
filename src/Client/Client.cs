@@ -42,8 +42,8 @@ namespace Client
 
             Console.WriteLine(tokenResponse.Json);
 
-            //await CallApi();
-            await RequestTokenPwd();
+            await CallApi();
+            //await RequestTokenPwd();
         }
 
         private async Task CallApi()

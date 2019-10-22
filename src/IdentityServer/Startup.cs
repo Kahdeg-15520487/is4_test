@@ -31,6 +31,7 @@ namespace IdentityServer
                 .AddInMemoryClients(Config.Clients)
                 .AddTestUsers(Config.GetUsers());
 
+
             services.AddAuthentication()
                     .AddGoogle("Google", options =>
                     {
