@@ -29,11 +29,11 @@ namespace IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AuthDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
             // uncomment, if you want to add an MVC-based UI
             services.AddControllersWithViews();
+
+            services.AddDbContext<AuthDbContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<ApplicationUser, IdentityRole>(o =>
                     {
@@ -50,7 +50,8 @@ namespace IdentityServer
                 .AddInMemoryApiResources(Config.Apis)
                 .AddInMemoryClients(Config.Clients)
                 .AddAspNetIdentity<ApplicationUser>()
-                .AddProfileService<ProfileService>();
+                //.AddProfileService<ProfileService>()
+                ;
 
             services.AddAuthentication()
                     .AddGoogle("Google", options =>
