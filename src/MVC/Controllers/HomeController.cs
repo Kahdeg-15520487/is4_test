@@ -31,7 +31,6 @@ namespace MVC.Controllers
         [Authorize]
         public IActionResult Privacy()
         {
-            var ttt = this.HttpContext.AuthenticateAsync().Result;
             ViewData["Message"] = "Secure page.";
 
             return View();
