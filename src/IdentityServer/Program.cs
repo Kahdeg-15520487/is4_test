@@ -52,8 +52,8 @@ namespace IdentityServer
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                    webBuilder.UseSerilog();
+                    webBuilder.UseStartup<Startup>()
+                              .UseUrls("http://localhost:5000");
                 });
     }
 }

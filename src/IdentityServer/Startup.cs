@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using IdentityServer.Repository;
+using IdentityServer.Service;
+using IdentityServer.Services;
 using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -15,31 +19,45 @@ namespace IdentityServer
     {
         public IWebHostEnvironment Environment { get; }
 
+        public IConfiguration Configuration { get; }
+
         public Startup(IWebHostEnvironment environment)
         {
             Environment = environment;
+
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                  .SetBasePath(Environment.ContentRootPath)
+                  .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                  .AddJsonFile($"appsettings.{Environment.EnvironmentName}.json", optional: true);
+
+            builder.AddEnvironmentVariables();
+            this.Configuration = builder.Build();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IConfiguration>(this.Configuration);
+
             // uncomment, if you want to add an MVC-based UI
             services.AddControllersWithViews();
+            services.AddSingleton<IUserRepository, UserRepository>();
 
             IIdentityServerBuilder builder = services.AddIdentityServer()
                 .AddInMemoryIdentityResources(Config.Ids)
                 .AddInMemoryApiResources(Config.Apis)
                 .AddInMemoryClients(Config.Clients)
-                .AddTestUsers(Config.GetUsers());
-
+                .AddResourceOwnerValidator<ResourceOwnerPasswordValidator>()
+                .AddProfileService<ProfileService>()
+                //.AddTestUsers(Config.GetUsers())
+                ;
 
             services.AddAuthentication()
-                    .AddGoogle("Google", options =>
-                    {
-                        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-
-                        options.ClientId = "109530320164-fquf09gji3vddm9j91llvp2u7m1eku2i.apps.googleusercontent.com";
-                        options.ClientSecret = "pesC8msDOn4izVBPr766P8hl";
-                    })
+                    .AddCookie()
+                    .AddGoogle("Google", "Google Account", options =>
+                     {
+                         IConfigurationSection section = this.Configuration.GetSection("ExternalProvider:Google");
+                         section.Bind(options);
+                     })
                     .AddOpenIdConnect("oidc", "OpenID Connect", options =>
                     {
                         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
