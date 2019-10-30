@@ -3,7 +3,19 @@
     <text>
         <ul class="nav navbar-nav navbar-right">
             <li class="navbar-text">
-                Hello, @User.Claims.First(x => x.Type == "email").Value
+                @{ 
+                    var email = User.Claims.FirstOrDefault(x => x.Type == "email");
+                    var emailDisplay = "";
+                    if (email == null)
+                    {
+                        emailDisplay = "email@website";
+                    }
+                    else
+                    {
+                        emailDisplay = email.Value;
+                    }
+                }
+                Hello, @emailDisplay
             </li>
             <li>
                 @Html.ActionLink("Sign out", "Logout", new { controller = "Home" })

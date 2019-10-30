@@ -71,7 +71,7 @@ namespace MVC.Controllers
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            string content = await client.GetStringAsync("http://localhost:5001/api/identity");
+            string content = await client.GetStringAsync("http://localhost:5003/api/identity");
 
             ViewBag.Json = JArray.Parse(content).ToString();
             return View("json");
