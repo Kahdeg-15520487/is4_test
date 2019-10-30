@@ -27,6 +27,33 @@ namespace MVC.Controllers
             return View();
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task Login(string returnUrl = null)
+        {
+            if (returnUrl == null)
+                returnUrl = "/";
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                AuthenticationProperties props = new AuthenticationProperties
+                {
+                    RedirectUri = returnUrl,
+                    Items =
+                        {
+                            { "scheme", "oidc" },
+                            { "returnUrl", returnUrl }
+                        }
+                };
+                await HttpContext.ChallengeAsync(props);
+            }
+        }
+
+        [Authorize]
+        public async Task Logout()
+        {
+            await HttpContext.SignOutAsync("Cookies");
+            await HttpContext.SignOutAsync("oidc");
+        }
 
         [Authorize]
         public IActionResult Privacy()
@@ -48,11 +75,6 @@ namespace MVC.Controllers
 
             ViewBag.Json = JArray.Parse(content).ToString();
             return View("json");
-        }
-
-        public IActionResult Logout()
-        {
-            return SignOut("Cookies", "oidc");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
