@@ -4,6 +4,7 @@
 
 using IdentityModel;
 using IdentityServer.Dal;
+using IdentityServer.Quickstart.Account;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,13 +40,16 @@ namespace UI
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
 
+        private readonly AuthDbContext _authDbContext;
+
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
-            IEventService events)
+            IEventService events,
+            AuthDbContext authDbContext)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
             // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
@@ -56,6 +61,8 @@ namespace UI
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
             _events = events;
+
+            _authDbContext = authDbContext;
         }
 
         /// <summary>
@@ -165,7 +172,7 @@ namespace UI
                     }
                 }
 
-                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId:context?.ClientId));
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.ClientId));
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
             }
 
@@ -174,7 +181,7 @@ namespace UI
             return View(vm);
         }
 
-        
+
         /// <summary>
         /// Show logout page
         /// </summary>
@@ -234,6 +241,40 @@ namespace UI
             return View();
         }
 
+        [HttpPost("role")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> SetRole([FromBody] SetRoleInputDTO dto)
+        {
+            ApplicationUser user = await _userManager.FindByNameAsync(dto.UserName);
+            RoleToPermissions role = await this._authDbContext.RolesToPermissions.FindAsync(dto.RoleName);
+
+            if (role == null)
+            {
+                role = new RoleToPermissions(dto.RoleName, dto.RoleDescription, dto.PermissionsInRole);
+                this._authDbContext.RolesToPermissions.Add(role);
+            }
+
+            this._authDbContext.UserToRoles.Add(new UserToRole(user.Id, role));
+
+            UserToRole userRole = await this._authDbContext.UserToRoles
+                                            .Include(utr => utr.Role)
+                                            .FirstOrDefaultAsync(utr => utr.UserId.Equals(user.Id) && utr.RoleName.Equals(role.RoleName));
+
+            return Json(userRole);
+        }
+
+        [HttpGet("role/{userId}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> GetRole(string userId)
+        {
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+
+            UserToRole userRole = await this._authDbContext.UserToRoles
+                                            .Include(utr => utr.Role)
+                                            .FirstOrDefaultAsync(utr => utr.UserId.Equals(user.Id));
+
+            return Json(userRole);
+        }
 
         /*****************************************/
         /* helper APIs for the AccountController */

@@ -27,7 +27,7 @@ namespace IdentityServer
 
             List<Claim> claims = new List<Claim>
             {
-                new Claim("username", user.UserName),
+                new Claim("usernamelala", user.UserName),
             };
 
             context.IssuedClaims.AddRange(claims);

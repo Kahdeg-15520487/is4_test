@@ -41,12 +41,24 @@ namespace IdentityServer
             };
         }
 
-        public static IEnumerable<IdentityResource> Ids =>
-            new IdentityResource[]
+        public static IEnumerable<IdentityResource> Ids
+        {
+            get
             {
-                new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
-            };
+                IdentityResource customProfile = new IdentityResource(
+                    name: "custom.profile",
+                    displayName: "Custom profile",
+                    claimTypes: new[] { "name", "email", "status" });
+
+                return
+                    new IdentityResource[]
+                    {
+                        new IdentityResources.OpenId(),
+                        new IdentityResources.Profile(),
+                        customProfile
+                    };
+            }
+        }
 
         public static IEnumerable<ApiResource> Apis =>
             new ApiResource[]
@@ -112,6 +124,5 @@ namespace IdentityServer
                     AllowOfflineAccess = true
                 }
             };
-
     }
 }

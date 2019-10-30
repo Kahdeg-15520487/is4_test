@@ -14,7 +14,7 @@ namespace IdentityServer.Dal
         [Required(AllowEmptyStrings = false)] //A role must have at least one role in it
         private string _permissionsInRole;
 
-        private RoleToPermissions() { }
+        public RoleToPermissions() { }
 
         /// <summary>
         /// This creates the Role with its permissions
@@ -22,7 +22,7 @@ namespace IdentityServer.Dal
         /// <param name="roleName"></param>
         /// <param name="description"></param>
         /// <param name="permissions"></param>
-        private RoleToPermissions(string roleName, string description, ICollection<string> permissions)
+        public RoleToPermissions(string roleName, string description, ICollection<string> permissions)
         {
             RoleName = roleName;
             _permissionsInRole = permissions.PackIntoString();

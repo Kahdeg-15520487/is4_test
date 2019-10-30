@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVC.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MVC.Controllers
@@ -43,9 +44,9 @@ namespace MVC.Controllers
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            string content = await client.GetStringAsync("http://localhost:5001/api/identity");
+            string content = await client.GetStringAsync("http://localhost:5000/connect/userinfo");
 
-            ViewBag.Json = JArray.Parse(content).ToString();
+            ViewBag.Json = content;
             return View("json");
         }
 

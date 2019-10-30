@@ -50,7 +50,7 @@ namespace IdentityServer
                 .AddInMemoryApiResources(Config.Apis)
                 .AddInMemoryClients(Config.Clients)
                 .AddAspNetIdentity<ApplicationUser>()
-                //.AddProfileService<ProfileService>()
+                .AddProfileService<ProfileService>()
                 ;
 
             services.AddAuthentication()
