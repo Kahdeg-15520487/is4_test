@@ -14,7 +14,15 @@ The main project are:
 
 Run the above project with dotnet run
 
-![architect](presentation/architect.png)
+sample user:
+username: alice@alice.com
+password: 123456
+
+## Architecture
 
 ![authentication flow](presentation/authentication.png)
+
+![architect](presentation/architect.png)
+
+
 
