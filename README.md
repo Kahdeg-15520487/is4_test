@@ -14,5 +14,7 @@ The main project are:
 
 Run the above project with dotnet run
 
-![architect](presentation/authentication.png)
+![architect](presentation/architect.png)
+
+![authentication flow](presentation/authentication.png)
 
