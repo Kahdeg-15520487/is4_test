@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MVC.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MVC.Controllers
@@ -71,9 +72,20 @@ namespace MVC.Controllers
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            string content = await client.GetStringAsync("http://localhost:5003/api/identity");
 
-            ViewBag.Json = JArray.Parse(content).ToString();
+            HttpResponseMessage response = await client.GetAsync("http://localhost:5003/api/identity");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string content = await response.Content.ReadAsStringAsync();
+
+                ViewBag.Json = JArray.Parse(content).ToString();
+            }
+            else
+            {
+                ViewBag.Json = "403 - Forbidden";
+            }
+
             return View("json");
         }
 

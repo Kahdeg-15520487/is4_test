@@ -42,8 +42,8 @@ namespace Client
 
             Console.WriteLine(tokenResponse.Json);
 
-            await CallApi();
-            //await RequestTokenPwd();
+            //await CallApi();
+            await RequestTokenPwd();
         }
 
         private async Task CallApi()
@@ -52,7 +52,7 @@ namespace Client
             HttpClient client = new HttpClient();
             client.SetBearerToken(tokenResponse.AccessToken);
 
-            HttpResponseMessage response = await client.GetAsync("http://localhost:5001/api/identity");
+            HttpResponseMessage response = await client.GetAsync("http://localhost:5003/api/identity");
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine(response.StatusCode);
@@ -74,8 +74,8 @@ namespace Client
                 ClientId = "ro.client",
                 ClientSecret = "secret",
 
-                UserName = "alice",
-                Password = "password",
+                UserName = "alice@alice.com",
+                Password = "123456",
                 Scope = "api1"
             });
 
@@ -86,6 +86,19 @@ namespace Client
             }
 
             Console.WriteLine(tokenResponse.Json);
+
+            client.SetBearerToken(tokenResponse.AccessToken);
+
+            HttpResponseMessage response = await client.GetAsync("http://localhost:5003/api/identity");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.StatusCode);
+            }
+            else
+            {
+                string content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(JArray.Parse(content));
+            }
         }
     }
 }

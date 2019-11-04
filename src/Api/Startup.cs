@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -12,38 +9,64 @@ namespace Api
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        {
+            this.Environment = environment;
+
+            //IConfigurationBuilder builder = new ConfigurationBuilder()
+            //      .SetBasePath(Environment.ContentRootPath)
+            //      .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            //      .AddJsonFile($"appsettings.{Environment.EnvironmentName}.json", optional: true);
+
+            //builder.AddEnvironmentVariables();
+            //this.Configuration = builder.Build();
+            this.Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvcCore()
-               .AddAuthorization();
+            services.AddControllers();
+            services.AddSingleton<IConfiguration>(this.Configuration);
 
             services.AddAuthentication("Bearer")
-                .AddJwtBearer("Bearer", options =>
-                {
-                    options.Authority = "http://localhost:5000";
-                    options.RequireHttpsMetadata = false;
+                    .AddIdentityServerAuthentication(options =>
+                    {
+                        options.Authority = "http://localhost:5000";
+                        options.RequireHttpsMetadata = false;
+                        options.ApiName = "api1";
+                    });
 
-                    options.Audience = "api1";
-                });
+            services.AddAuthorization(options =>
+                    {
+                        IConfigurationSection section = this.Configuration.GetSection("Authorization");
+                        Dictionary<string, string[]> policies = new Dictionary<string, string[]>();
+                        section.Bind(policies);
+                        foreach (KeyValuePair<string, string[]> policy in policies)
+                        {
+                            options.AddPolicy(policy.Key, p =>
+                            {
+                                p.RequireRole(policy.Value);
+                            });
+                        }
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
+            app.UseRouting();
             app.UseAuthentication();
 
-            app.UseRouting();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}");
+                endpoints.MapControllers();
             });
         }
     }
