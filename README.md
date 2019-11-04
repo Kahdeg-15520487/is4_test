@@ -1,7 +1,7 @@
 # is4_test
 
 ## Quick start 
-Ignore project IdentityServerAspNetIdentity
+**Ignore project IdentityServerAspNetIdentity**
 
 The main project are:
 
