@@ -71,5 +71,10 @@ namespace IdentityServer.Repository
             string hash = HashUtility.GenerateSaltedHash(password, user.Salt);
             return user != null && user.PasswordHash.Equals(hash);
         }
+
+        public User GetByExternalProvider(string provider, string providerUserId)
+        {
+            return users.FirstOrDefault(x => x.ProviderName == provider && x.ProviderSubjectId == providerUserId);
+        }
     }
 }

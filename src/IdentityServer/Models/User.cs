@@ -9,7 +9,17 @@ namespace IdentityServer.Models
         public string PasswordHash { get; set; }
         public string Salt { get; set; }
         public IEnumerable<string> Roles { get; set; }
-        public string Project { get; set; }
+
         public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the provider name.
+        /// </summary>
+        public string ProviderName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the provider subject identifier.
+        /// </summary>
+        public string ProviderSubjectId { get; set; }
     }
 }
