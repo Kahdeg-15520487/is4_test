@@ -12,6 +12,19 @@ The main project are:
 * MVC -  the client frontend app  
     run on localhost:5002
 
+### Setup environment
+
+Install .net core 3 sdk and .net core 2.2 sdk  
+Create a database named " IDB " with SQL Server Management Studio  
+Install dotnet-ef tool with
+```
+dotnet tool install --global dotnet-ef
+```
+Apply database migration with
+```
+cd src\IdentityServer
+dotnet ef update database
+```
 Run the above project with dotnet run
 
 sample user:
