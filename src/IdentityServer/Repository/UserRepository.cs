@@ -1,80 +1,78 @@
-﻿using IdentityServer.Models;
-using IdentityServer.Repository;
-using IdentityServer.Utilities;
-using Microsoft.Extensions.Configuration;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using IdentityServer.Dal;
+using IdentityServer.Models;
+using IdentityServer.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace IdentityServer.Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly List<User> users = new List<User>();
-        private readonly Dictionary<string, List<string>> rights = new Dictionary<string, List<string>>();
-        public UserRepository(IConfiguration configuration)
+        private readonly IdbDBContext context;
+
+        public UserRepository(IdbDBContext context)
         {
-            IConfigurationSection apiSection = configuration.GetSection("Users");
-            apiSection.Bind(users);
-            IConfigurationSection apiRightSection = configuration.GetSection("Rights");
-            apiRightSection.Bind(rights);
+            this.context = context;
         }
 
         public User AddUser(User user)
         {
-            User u = this.users.FirstOrDefault(x => x.Id == user.Id);
-            if (u == null)
-            {
-                int id = this.users.Select(x => x.Id).Max();
-                user.Id = ++id;
-                users.Add(user);
-            }
-            return user;
+            var entry = this.context.Users.Add(user);
+            return entry.Entity;
         }
 
         public IEnumerable<User> GetAllUser()
         {
-            return users;
+            return this.context.Users;
+        }
+
+        public User GetByExternalProvider(string provider, string providerUserId)
+        {
+            return this.context.Users.FirstOrDefault(u => u.ProviderName == provider && u.ProviderSubjectId == providerUserId);
+        }
+
+        public IEnumerable<Right> GetRights(string roleName)
+        {
+            return GetRole(roleName)?.Rights;
+        }
+
+        public Role GetRole(string roleName)
+        {
+            return this.context.Roles.FirstOrDefault(r => r.RoleName == roleName);
         }
 
         public User GetUserByEmail(string email)
         {
-            return users.FirstOrDefault(x => x.Email == email);
+            return this.context.Users.FirstOrDefault(u => u.Email == email);
         }
 
-        public User GetUserById(int id)
+        public User GetUserById(Guid id)
         {
-            return users.FirstOrDefault(x => x.Id == id);
+            return this.context.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId.Equals(id));
         }
 
-        public IEnumerable<string> GetUserRoles(int userId)
+        public Role GetUserRole(Guid userId)
         {
-            User u = this.users.FirstOrDefault(x => x.Id == userId);
-            if (u != null)
-            {
-                return u.Roles;
-            }
-            return new List<string>();
+            return this.GetUserById(userId)?.Role;
         }
 
-        public IEnumerable<string> GetRights(string roleName)
+        public void SaveChanges()
         {
-            return rights[roleName];
+            this.context.SaveChanges();
         }
 
         public bool ValidateCredentials(string userName, string password)
         {
-            User user = this.users.FirstOrDefault(x => x.Email == userName);
+            User user = GetUserByEmail(userName);
             if (user == null)
             {
                 return false;
             }
             string hash = HashUtility.GenerateSaltedHash(password, user.Salt);
             return user != null && user.PasswordHash.Equals(hash);
-        }
-
-        public User GetByExternalProvider(string provider, string providerUserId)
-        {
-            return users.FirstOrDefault(x => x.ProviderName == provider && x.ProviderSubjectId == providerUserId);
         }
     }
 }

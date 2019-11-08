@@ -30,9 +30,9 @@ namespace IdentityServer.Service
                 if (user != null)
                 {
 
-                    context.IssuedClaims.Add(new Claim(JwtClaimTypes.Id, user.Id.ToString()));
+                    context.IssuedClaims.Add(new Claim(JwtClaimTypes.Id, user.UserId.ToString()));
                     context.IssuedClaims.Add(new Claim(JwtClaimTypes.Email, user.Email));
-                    System.Collections.Generic.IEnumerable<string> roles = this.userRepository.GetUserRoles(user.Id);
+                    IEnumerable<string> roles = new List<string> { this.userRepository.GetUserRole(user.UserId).RoleName };
 
                     if (roles.Any())
                     {
@@ -40,7 +40,7 @@ namespace IdentityServer.Service
                         {
                             context.IssuedClaims.Add(new Claim(ClaimTypes.Role, role));
                             context.IssuedClaims.Add(new Claim(JwtClaimTypes.Role, role));
-                            IEnumerable<string> rights = this.userRepository.GetRights(role);
+                            IEnumerable<string> rights = this.userRepository.GetRights(role).Select(r => r.ToString());
                             if (rights.Any())
                             {
                                 IEnumerable<Claim> claims = rights.Select(x => new Claim("right", x.Trim()));

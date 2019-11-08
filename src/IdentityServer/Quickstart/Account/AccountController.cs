@@ -125,7 +125,7 @@ namespace UI
                 if (_userRepository.ValidateCredentials(model.Username, model.Password))
                 {
                     var user = _userRepository.GetUserByEmail(model.Username);
-                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.Email, user.Id.ToString(), user.Email));
+                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.Email, user.UserId.ToString(), user.Email));
 
                     // only set explicit expiration here if user chooses "remember me". 
                     // otherwise we rely upon expiration configured in cookie middleware.
@@ -140,7 +140,7 @@ namespace UI
                     };
 
                     // issue authentication cookie with subject ID and username
-                    await HttpContext.SignInAsync(user.Id.ToString(), user.Email, props);
+                    await HttpContext.SignInAsync(user.UserId.ToString(), user.Email, props);
 
                     if (context != null)
                     {

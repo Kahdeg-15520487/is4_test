@@ -25,15 +25,15 @@ namespace IdentityServer.Services
             if (userRepository.ValidateCredentials(context.UserName, context.Password))
             {
                 User user = this.userRepository.GetUserByEmail(context.UserName);
-                IEnumerable<string> roles = this.userRepository.GetUserRoles(user.Id);
+                IEnumerable<string> roles = new List<string> { this.userRepository.GetUserRole(user.UserId).RoleName };
                 List<Claim> claims = new List<Claim>();
                 if (roles.Any())
                 {
-                    foreach (var role in roles)
+                    foreach (string role in roles)
                     {
                         claims.Add(new Claim(JwtClaimTypes.Role, role));
                         claims.Add(new Claim(ClaimTypes.Role, role));
-                        IEnumerable<string> rights = this.userRepository.GetRights(role);
+                        IEnumerable<string> rights = this.userRepository.GetRights(role).Select(r => r.ToString());
                         if (rights.Any())
                         {
                             claims.AddRange(rights.Select(x => new Claim("right", x.Trim())));

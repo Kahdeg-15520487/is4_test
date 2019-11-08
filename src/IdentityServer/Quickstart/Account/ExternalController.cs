@@ -135,7 +135,7 @@ namespace UI
             ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
 
             // issue authentication cookie for user
-            await HttpContext.SignInAsync(user.Id.ToString(), user.Email, provider, localSignInProps, additionalLocalClaims.ToArray());
+            await HttpContext.SignInAsync(user.UserId.ToString(), user.Email, provider, localSignInProps, additionalLocalClaims.ToArray());
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -145,7 +145,7 @@ namespace UI
 
             // check if external login is in the context of an OIDC request
             IdentityServer4.Models.AuthorizationRequest context = await this._interaction.GetAuthorizationContextAsync(returnUrl);
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id.ToString(), user.Email, true, context?.ClientId));
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.UserId.ToString(), user.Email, true, context?.ClientId));
 
             if (context != null)
             {
@@ -240,8 +240,9 @@ namespace UI
                 ProviderName = provider,
                 ProviderSubjectId = providerUserId
             };
-            u.Roles = new List<string>() { "User" };
+            u.Role = _userRepository.GetRole("User");
             u = _userRepository.AddUser(u);
+            _userRepository.SaveChanges();
             return u;
         }
 
