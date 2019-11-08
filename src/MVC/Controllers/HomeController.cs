@@ -73,7 +73,7 @@ namespace MVC.Controllers
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            HttpResponseMessage response = await client.GetAsync("http://localhost:5003/api/identity");
+            HttpResponseMessage response = await client.GetAsync("http://localhost:5003/api/coffee");
 
             if (response.IsSuccessStatusCode)
             {
