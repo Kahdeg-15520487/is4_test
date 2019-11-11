@@ -22,6 +22,11 @@ namespace Api.Controllers
         public string Coffee { get; set; }
     }
 
+    public class AddCoffeeInput
+    {
+        public string Coffee { get; set; }
+    }
+
     [Route("api/coffee")]
     [ApiController]
     [Authorize]
@@ -31,7 +36,7 @@ namespace Api.Controllers
 
         private static List<string> coffeeTypes = null;
 
-        private static Dictionary<string, Order> db = new Dictionary<string, Order>();
+        private static Dictionary<Guid, Order> db = new Dictionary<Guid, Order>();
 
         public CoffeeController(IConfiguration configuration)
         {
@@ -50,12 +55,35 @@ namespace Api.Controllers
             return coffeeTypes;
         }
 
+        [HttpPost("add")]
+        [Authorize(Policy = "AddCoffee")]
+        [UserMapper]
+        public IEnumerable<string> AddCoffee(AddCoffeeInput input)
+        {
+            coffeeTypes.Add(input.Coffee);
+            return coffeeTypes;
+        }
+
         [HttpPost]
         [Authorize(Policy = "OrderCoffee")]
         [UserMapper]
-        public Order Order(OrderInput input)
+        public IActionResult Order(OrderInput input)
         {
-            return null;
+            if (coffeeTypes.Contains(input.Coffee))
+            {
+                return NotFound(input.Coffee);
+            }
+
+            Guid userId = (Guid)this.Request.HttpContext.Items["UserId"];
+            Guid orderId = Guid.NewGuid();
+            Order order = new Order()
+            {
+                Coffee = input.Coffee,
+                OrderId = orderId,
+                UserId = userId
+            };
+            db.Add(orderId, order);
+            return Ok(order);
         }
     }
 }

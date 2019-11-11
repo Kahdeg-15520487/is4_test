@@ -1,0 +1,18 @@
+@using Microsoft.AspNetCore.Authentication
+@{
+    ViewData["Title"] = "Order Coffee";
+}
+
+<h2>Order Coffee</h2>
+
+
+
+@using (@Html.BeginForm("OrderCoffee", "Coffee"))
+{
+    @Html.AntiForgeryToken();
+
+    <label>coffee type:</label>
+    <input type="text" name="Coffee" value="" />
+    <input type="submit" value="Submit" class="submit" />
+}
+

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,12 +24,19 @@ namespace Api.Filters
             bool authorized = false;
             if (context.HttpContext.User.Identity.IsAuthenticated)
             {
-                string accessToken = context.HttpContext.Request.Headers[HeaderNames.Authorization][0];
-                //User user = this.identityMappingService.CacheAndReturnUser(accessToken, tokenClaim);
-                //context.HttpContext.Items[nameof(User)] = user;
+                string accessToken = context.HttpContext.Request.Headers[HeaderNames.Authorization][0].Replace("Bearer ", "");
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                SecurityToken jsonToken = handler.ReadToken(accessToken);
+                JwtSecurityToken tokenS = handler.ReadToken(accessToken) as JwtSecurityToken;
+                System.Security.Claims.Claim subClaim = tokenS.Claims.FirstOrDefault(t => t.Type == "sub");
+                if (subClaim == null)
+                {
+                    throw new Exception("400");
+                }
+                Guid userId = Guid.Parse(subClaim.Value);
 
-                //authorized = this.securityHelperService.HasActivityRight(
-                //    new string[] { tokenClaim.RoleNameClaim }, this.activityRights);
+                context.HttpContext.Items["UserId"] = userId;
+                authorized = true;
             }
 
             if (!authorized)
