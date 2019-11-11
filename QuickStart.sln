@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "src\Api\Api.csproj",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "src\Client\Client.csproj", "{FC807495-92B7-4D2B-8B1C-92B695624F90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVC", "src\MVC\MVC.csproj", "{DCC1ECE2-72EA-40A8-A64E-9EB482982CDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVC", "src\MVC\MVC.csproj", "{DCC1ECE2-72EA-40A8-A64E-9EB482982CDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
